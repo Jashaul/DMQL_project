@@ -23,18 +23,21 @@ function App() {
             dataField: "clap_sum",
             sort: true,
             filter: textFilter(),
+            formatter: (val) => { return val? val : 0},
         },
         {
             text: "Total Response",
             dataField: "response_sum",
             sort: true,
             filter: textFilter(),
+            formatter: (val) => { return val? val : 0},
         },
         {
             text: "Total Read Time",
             dataField: "read_time_sum",
             sort: true,
             filter: textFilter(),
+            formatter: (val) => { return val? val : 0},
         },
     ];
 
@@ -55,11 +58,11 @@ function App() {
     const createAuthor = () => {
         let authorName = prompt('Enter Author name');
         fetch(`${URL_endpoint}add-authors`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({authorName}),
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({authorName}),
         })
         .then(response => {
             return response.text();
@@ -73,7 +76,7 @@ function App() {
     const deleteAuthor = () => {
         let id = prompt('Enter Author id');
         fetch(`${URL_endpoint}authors/${id}`, {
-        method: 'DELETE',
+            method: 'DELETE',
         })
         .then(response => {
             return response.text();
