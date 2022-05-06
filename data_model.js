@@ -29,7 +29,19 @@ const createAuthor = (body) => {
             resolve(`A new author has been added`)
         })
     })
-  }
+}
+
+const updateAuthor = (body) => {
+    return new Promise(function(resolve, reject) {
+        const { authorName, author_id } = body
+        pool.query('UPDATE authors SET author=$1 WHERE author_id=$2;', [authorName, author_id], (error, results) => {
+            if (error) {
+                reject(error)
+            }
+            resolve(`Updated author`)
+        })
+    })
+}
 
 const deleteAuthor = (val) => {
     return new Promise(function(resolve, reject) {
@@ -46,5 +58,6 @@ const deleteAuthor = (val) => {
 module.exports = {
     getAuthors,
     createAuthor,
+    updateAuthor,
     deleteAuthor,
 }
