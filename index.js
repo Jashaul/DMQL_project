@@ -24,8 +24,38 @@ app.get('/authors', (req, res) => {
     })
 })
 
+app.get('/sites', (req, res) => {
+    data_model.getSites()
+    .then(response => {
+        res.status(200).send(response);
+    })
+    .catch(error => {
+        res.status(500).send(error);
+    })
+})
+
+app.get('/articles', (req, res) => {
+    data_model.getArticles()
+    .then(response => {
+        res.status(200).send(response);
+    })
+    .catch(error => {
+        res.status(500).send(error);
+    })
+})
+
 app.post('/add-authors', (req, res) => {
     data_model.createAuthor(req.body)
+    .then(response => {
+        res.status(200).send(response);
+    })
+    .catch(error => {
+        res.status(500).send(error);
+    })
+})
+
+app.post('/add-sites', (req, res) => {
+    data_model.createSite(req.body)
     .then(response => {
         res.status(200).send(response);
     })
@@ -44,8 +74,38 @@ app.put('/update-authors', (req, res) => {
     })
 })
 
+app.put('/update-sites', (req, res) => {
+    data_model.updateSite(req.body)
+    .then(response => {
+        res.status(200).send(response);
+    })
+    .catch(error => {
+        res.status(500).send(error);
+    })
+})
+
 app.delete('/authors/:id', (req, res) => {
     data_model.deleteAuthor(req.params.id)
+    .then(response => {
+        res.status(200).send(response);
+    })
+    .catch(error => {
+        res.status(500).send(error);
+    })
+})
+
+app.delete('/sites/:id', (req, res) => {
+    data_model.deleteSite(req.params.id)
+    .then(response => {
+        res.status(200).send(response);
+    })
+    .catch(error => {
+        res.status(500).send(error);
+    })
+})
+
+app.delete('/articles/:id', (req, res) => {
+    data_model.deleteArticle(req.params.id)
     .then(response => {
         res.status(200).send(response);
     })
