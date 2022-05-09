@@ -64,6 +64,16 @@ app.post('/add-sites', (req, res) => {
     })
 })
 
+app.post('/add-articles', (req, res) => {
+    data_model.createArticle(req.body)
+    .then(response => {
+        res.status(200).send(response);
+    })
+    .catch(error => {
+        res.status(500).send(error);
+    })
+})
+
 app.put('/update-authors', (req, res) => {
     data_model.updateAuthor(req.body)
     .then(response => {
@@ -76,6 +86,16 @@ app.put('/update-authors', (req, res) => {
 
 app.put('/update-sites', (req, res) => {
     data_model.updateSite(req.body)
+    .then(response => {
+        res.status(200).send(response);
+    })
+    .catch(error => {
+        res.status(500).send(error);
+    })
+})
+
+app.put('/update-articles', (req, res) => {
+    data_model.updateArticle(req.body)
     .then(response => {
         res.status(200).send(response);
     })

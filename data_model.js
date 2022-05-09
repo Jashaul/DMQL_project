@@ -31,7 +31,7 @@ const getSites = () => {
 }
 
 const getArticles = () => {
-    const query = 'SELECT * FROM (SELECT articles.article_id, articles.title, articles.subtitle, articles.url, articles.date_posted, authors.author, domains.domain_name FROM articles, authors, domains WHERE articles.author_id = authors.author_id AND articles.domain_id = domains.domain_id ORDER BY articles.article_id desc LIMIT 50) AS list LEFT JOIN (SELECT article_id, claps, responses, reading_time, tags, prev_mon_topic_rate FROM article_meta) AS meta ON list.article_id = meta.article_id;';
+    const query = 'SELECT article_id, title, subtitle, url, date_posted, author, domain_name, claps, responses, reading_time, tags, prev_mon_topic_rate FROM (articles natural join authors natural join domains) natural left join article_meta ORDER BY article_id desc LIMIT 50;';
     return new Promise(function(resolve, reject) {
         pool.query(query, (error, results) => {
             if (error) {
@@ -66,6 +66,46 @@ const createSite = (body) => {
     })
 }
 
+const createArticle = (body) => {
+    return new Promise(function(resolve, reject) {
+        const { title, subtitle, url, author, domain_name } = body
+        var author_id = null;
+        var domain_id = null;
+        console.log("here")
+        console.log(body)
+        pool.query(`SELECT author_id FROM authors WHERE author="${author}";` , (error, results) => {
+            if (error) {
+                reject(error)
+            }
+            try {
+                console.log(results.rows[0])
+                author_id = results.rows[0].author_id;
+            } catch (error) {
+                reject("Author does not exist")
+            }
+            pool.query(`SELECT domain_id FROM domains WHERE domain_name="${domain_name}";` , (error, results) => {
+                if (error) {
+                    reject(error)
+                }
+                try {
+                    console.log(results)
+                    domain_id = results.rows[0].domain_id;
+                } catch (error) {
+                    reject("Site does not exist")
+                }
+                console.log([title, subtitle, url, domain_id, author_id, moment().format("YYYY-MM-DD")])
+                pool.query('INSERT INTO articles(title, subtitle, url, domain_id, author_id, date_posted) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;', [title, subtitle, url, domain_id, author_id, moment().format("YYYY-MM-DD")], (error, results) => {
+                    if (error) {
+                        reject(error)
+                    }
+                    resolve(`A new site has been added`)
+                })
+            })
+        })
+    })
+        
+}
+
 const updateAuthor = (body) => {
     return new Promise(function(resolve, reject) {
         const { authorName, author_id } = body
@@ -82,6 +122,18 @@ const updateSite = (body) => {
     return new Promise(function(resolve, reject) {
         const { domainName, domain_id } = body
         pool.query('UPDATE domains SET domain_name=$1 WHERE domain_id=$2;', [domainName, domain_id], (error, results) => {
+            if (error) {
+                reject(error)
+            }
+            resolve(`Updated site`)
+        })
+    })
+}
+
+const updateArticle = (body) => {
+    return new Promise(function(resolve, reject) {
+        const { article_id, title, subtitle, url, author, domain_name } = body
+        pool.query('UPDATE articles SET title=$2, subtitle=$3, url=$4, domain_id=$5, author_id=$6  WHERE article_id=$1;', [domainName, domain_id], (error, results) => {
             if (error) {
                 reject(error)
             }
@@ -132,8 +184,10 @@ module.exports = {
     getArticles,
     createAuthor,
     createSite,
+    createArticle,
     updateAuthor,
     updateSite,
+    updateArticle,
     deleteAuthor,
     deleteSite,
     deleteArticle,

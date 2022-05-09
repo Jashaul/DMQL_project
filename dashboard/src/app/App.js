@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import Table from './components/MaterialTable';
 import { textFilter } from "react-bootstrap-table2-filter";
+import ModelPopup from './components/ModelPopup';
 
 function App() {
     const [tableData, setTableData] = useState(false);
@@ -58,6 +59,24 @@ function App() {
         });
     }
 
+    const createArticle = (row) => {
+        fetch(`${URL_endpoint}add-articles`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin' : '*',
+            },
+            body: JSON.stringify(row),
+        })
+        .then(response => {
+            return response.text();
+        })
+        .then(data => {
+            alert(data);
+            getData();
+        });
+    }
+
     const updateAuthor = (row) => {
         let authorName = prompt('Enter Author name', row.author);
         fetch(`${URL_endpoint}update-authors`, {
@@ -94,6 +113,43 @@ function App() {
             alert(data);
             getData();
         });
+    }
+
+    const updateArticle = (row) => {
+        fetch(`${URL_endpoint}update-articles`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin' : '*',
+            },
+            body: JSON.stringify(row),
+        })
+        .then(response => {
+            return response.text();
+        })
+        .then(data => {
+            alert(data);
+            getData();
+        });
+    }
+
+    const handleArticle = (vals, option, e) => {
+        var outputData = {};
+        for (var i=0; i <= vals.length; i++) {
+            if (vals[i] && vals[i].tagName === 'INPUT') {
+                if (vals[i].value != '' && vals[i].placeholder != vals[i].value) {
+                    outputData[vals[i].id] = vals[i].value;
+                } else {
+                    outputData[vals[i].id] = vals[i].placeholder;
+                }
+            }
+        }
+        if (option === 'Edit') {
+            updateArticle(outputData).then();
+        } else if (option === 'Add Article') {
+            createArticle(outputData);
+        }
+        e.preventDefault();
     }
 
     const deleteRecord = (id) => {
@@ -156,8 +212,8 @@ function App() {
             dataField: "",
             formatter: (cell, row) => {
                 return <div>
-                    <button onClick={() => updateAuthor(row)}>Update Author</button>
-                    <button onClick={() => deleteRecord(row.author_id)}>Delete Author</button>
+                    <button onClick={() => updateAuthor(row)} class="btn btn-secondary btn-sm">Update Author</button>
+                    <button onClick={() => deleteRecord(row.author_id)} class="btn btn-danger btn-sm">Delete Author</button>
                 </div>
             },
         },
@@ -202,8 +258,8 @@ function App() {
             dataField: "",
             formatter: (cell, row) => {
                 return <div>
-                    <button onClick={() => updateSite(row)}>Update Site</button>
-                    <button onClick={() => deleteRecord(row.domain_id)}>Delete Site</button>
+                    <button onClick={() => updateSite(row)} class="btn btn-secondary btn-sm">Update Site</button>
+                    <button onClick={() => deleteRecord(row.domain_id)} class="btn btn-danger btn-sm">Delete Site</button>
                 </div>
             },
         },
@@ -214,6 +270,45 @@ function App() {
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
     }
+
+    const articleForm = [
+        {
+            text: "Article ID",
+            dataField: "article_id",
+            type: "text",
+            mutable: false,
+        },
+        {
+            text: "Title",
+            dataField: "title",
+            type: "text",
+            mutable: true,
+        },
+        {
+            text: "Sub Title",
+            dataField: "subtitle",
+            type: "text",
+            mutable: true,
+        },
+        {
+            text: "URL",
+            dataField: "url",
+            type: "text",
+            mutable: true,
+        },
+        {
+            text: "Author",
+            dataField: "author",
+            type: "text",
+            mutable: true,
+        },
+        {
+            text: "Site",
+            dataField: "domain_name",
+            type: "text",
+            mutable: true,
+        },
+    ];
 
     const articleTable = [
         {
@@ -228,6 +323,9 @@ function App() {
             sort: true,
             filter: textFilter(),
             style: textOverflowStyle,
+            formatter: (val) => { 
+                return <div data-toggle="tooltip" title={val}>{val}</div>
+            },
         },
         {
             text: "Sub Title",
@@ -235,14 +333,20 @@ function App() {
             sort: true,
             filter: textFilter(),
             style: textOverflowStyle,
+            formatter: (val) => { 
+                return <div data-toggle="tooltip" title={val}>{val}</div>
+            },
         },
         {
             text: "URL",
             dataField: "url",
             style: textOverflowStyle,
+            formatter: (val) => { 
+                return <div data-toggle="tooltip" title={val}>{val}</div>
+            },
         },
         {
-            text: "Data Published",
+            text: "Date Published",
             dataField: "date_posted",
             style: textOverflowStyle,
         },
@@ -251,6 +355,9 @@ function App() {
             dataField: "author",
             sort: true,
             filter: textFilter(),
+            formatter: (val) => { 
+                return <div data-toggle="tooltip" title={val}>{val}</div>
+            },
         },
         {
             text: "Site",
@@ -258,6 +365,9 @@ function App() {
             sort: true,
             filter: textFilter(),
             style: textOverflowStyle,
+            formatter: (val) => { 
+                return <div data-toggle="tooltip" title={val}>{val}</div>
+            },
         },
         {
             text: "Claps",
@@ -297,35 +407,44 @@ function App() {
         {
             text: "",
             dataField: "",
-            formatter: (cell, row) => {
+            formatter: (cell, row, index) => {
                 return <div>
-                    <button onClick={() => updateAuthor(row)}>Update</button>
-                    <button onClick={() => deleteRecord(row.domain_id)}>Delete</button>
+                    {/* <button onClick={() => updateAuthor(row)} class="btn btn-secondary btn-sm">Update</button> */}
+                    <ModelPopup id={`updateArticle${index}`} label="Edit" formLayout={articleForm} data={row? row: null} onSubmit={handleArticle} />
+                    <button onClick={() => deleteRecord(row.domain_id)} class="btn btn-danger btn-sm">Delete</button>
                 </div>
             },
         },
     ];
-
+    
     return (
-        <div style={{ padding: "20px" }}>
-            <div id='author' onClick={switchList}>Author List</div>
-            <div id='site' onClick={switchList}>Site List</div>
-            <div id='article' onClick={switchList}>Article List</div>
-            {switchFlag === 'author'? tableData ? 
-            <div>
-                <button onClick={createAuthor}>Add Author</button>
-                <Table tableKey={"author_id"} data={tableData} columns={authorTable}></Table>                
-            </div> : 'There is no data available':''}
-            {switchFlag === 'site'? tableData ? 
-            <div>
-                <button onClick={createSite}>Add Site</button>
-                <Table tableKey={"domain_id"} data={tableData} columns={siteTable}></Table>                
-            </div> : 'There is no data available':''}
-            {switchFlag === 'article'? tableData ? 
-            <div>
-                <button onClick={createAuthor}>Add Article</button>
-                <Table tableKey={"article_id"} data={tableData} columns={articleTable}></Table>                
-            </div> : 'There is no data available':''}
+        <div>
+            <nav class="navbar navbar-dark bg-dark">
+                <div id='author' class="navbar-brand"  onClick={switchList}>Author List</div>
+                <div id='site' class="navbar-brand" onClick={switchList}>Site List</div>
+                <div id='article' class="navbar-brand" onClick={switchList}>Article List</div>
+            </nav>
+            <div style={{ padding: "20px" }}>
+                {switchFlag === 'author'? tableData ? 
+                <div>
+                    <h1>Author List</h1>
+                    <button onClick={createAuthor} class="btn btn-secondary btn-sm">Add Author</button>
+                    <Table tableKey={"author_id"} data={tableData} columns={authorTable}></Table>                
+                </div> : 'There is no data available':''}
+                {switchFlag === 'site'? tableData ? 
+                <div>
+                    <h1>Site List</h1>
+                    <button onClick={createSite} class="btn btn-secondary btn-sm">Add Site</button>
+                    <Table tableKey={"domain_id"} data={tableData} columns={siteTable}></Table>                
+                </div> : 'There is no data available':''}
+                {switchFlag === 'article'? tableData ? 
+                <div>
+                    <h1>Article List</h1>
+                    {/* <button onClick={createAuthor}>Add Article</button> */}
+                    <ModelPopup id="addArticle" label="Add Article" formLayout={articleForm} onSubmit={handleArticle}/>
+                    <Table tableKey={"article_id"} data={tableData} columns={articleTable}></Table>                
+                </div> : 'There is no data available':''}
+            </div>
         </div>
     );
 }
